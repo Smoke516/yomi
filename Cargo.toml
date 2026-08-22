@@ -7,7 +7,7 @@ authors = ["seawn"]
 license = "MIT"
 keywords = ["rss", "feed", "terminal", "tui", "reader"]
 categories = ["command-line-utilities"]
-repository = "https://github.com/seawn/yomi"
+repository = "https://github.com/Smoke516/yomi"
 
 [[bin]]
 name = "yomi"
