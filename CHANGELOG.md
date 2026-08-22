@@ -4,7 +4,57 @@ All notable changes to Yomi will be documented in this file.
 
 ## [Unreleased]
 
+### Changed — Yomi is a daily edition now, not an inbox
+
+The reader was reorganised around a bounded, ranked daily edition. The old
+shape — feeds, articles, preview pane, unread counts — was an email client, and
+it is gone.
+
+- **No unread count anywhere.** The header reports how much was discarded, not
+  how much you owe. `mark-all-as-read` went with it; it only ever existed to
+  dismiss a number that should not have been there.
+- **A bounded edition.** Twelve articles by default, over a 36-hour window,
+  both configurable. Per-feed crowding damping means a feed posting forty times
+  a day gets one slot rather than forty.
+- **Ranking with a visible reason.** Five or six additive terms — feed
+  engagement learned from what you finish, length preference, recency,
+  crowding, inbound links from your other feeds, and your own keyword rules.
+  `w` shows the arithmetic; `d` corrects it. Not a model: no training, no
+  opacity, and nothing leaves the machine.
+- **An honest held-back list.** Every feed with arrivals that did not make the
+  edition is named, with the reason, and `↵` reveals it.
+- **A real reading view.** The panes are dropped for a ~65-character measure
+  with paragraphs, blockquotes and code. Article pages are fetched and
+  extracted, because most feeds truncate.
+- **`s` writes to a markdown vault** with YAML frontmatter, for Scribble or any
+  Obsidian-style vault, and never overwrites a file it did not create.
+- **Colour comes from the terminal.** The sixteen ANSI slots instead of
+  hardcoded Tokyo Night RGB, with one accent reserved for meaning.
+- **MSRV is now 1.88**, up from 1.82. `rusqlite` pulls in `hashbrown` 0.17,
+  which needs edition 2024. Verified against real toolchains: 1.87 fails to
+  build, 1.88 builds and passes the suite.
+
+### Added
+
+- **A local SQLite store** at `~/.local/share/yomi/yomi.db` (`$YOMI_STORE`
+  overrides). Articles are kept rather than refetched, which is what makes the
+  ranking, offline reading and instant startup possible.
+- **`yomi today`**, with `--json` for piping.
+- **`yomi why <n>`** — the score breakdown from the shell.
+- **`yomi rule boost|demote|hide|list|remove`** — plain substring rules.
+- **`yomi status`** and **`yomi config`**.
+- Feed names are taken from the feed when `--name` is omitted.
+- A panic hook that restores the terminal, so a crash can no longer leave your
+  shell without echo.
+
 ### Fixed
+
+- **`yomi today | head` panicked with a broken pipe.** Rust masks SIGPIPE at
+  startup; a tool that advertises itself as pipeable has to restore it.
+- **The interface redrew eight times a second while idle.** It now paints only
+  when something changed, plus once a minute so relative ages stay honest.
+
+### Fixed (from the cleanup pass)
 
 - **`truncate_string` aborted the process on non-ASCII titles.** It cut with a
   byte index, so any headline whose byte 27 fell inside a multi-byte character
