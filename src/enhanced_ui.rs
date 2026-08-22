@@ -3,9 +3,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{
-        Block, BorderType, Borders, Clear, List, ListItem, Paragraph, Wrap,
-    },
+    widgets::{Block, BorderType, Borders, Clear, List, ListItem, Paragraph, Wrap},
     Frame,
 };
 
@@ -19,55 +17,55 @@ pub struct EnhancedTokyoNight;
 #[allow(dead_code)]
 impl EnhancedTokyoNight {
     // Core colors (same as original)
-    pub const BG: Color = Color::Rgb(26, 27, 38);         // #1a1b26
-    pub const BG_DARK: Color = Color::Rgb(22, 23, 32);    // #16172020 - darker variant
+    pub const BG: Color = Color::Rgb(26, 27, 38); // #1a1b26
+    pub const BG_DARK: Color = Color::Rgb(22, 23, 32); // #16172020 - darker variant
     pub const BG_HIGHLIGHT: Color = Color::Rgb(41, 44, 59); // #292c3b - selection
-    pub const FG: Color = Color::Rgb(192, 202, 245);      // #c0caf5
+    pub const FG: Color = Color::Rgb(192, 202, 245); // #c0caf5
     pub const FG_DARK: Color = Color::Rgb(169, 177, 214); // #a9b1d6 - dimmed text
-    
+
     // Enhanced color palette
-    pub const BLUE: Color = Color::Rgb(122, 162, 247);    // #7aa2f7 - primary
-    pub const PURPLE: Color = Color::Rgb(187, 154, 247);  // #bb9af7 - secondary
-    pub const CYAN: Color = Color::Rgb(125, 207, 255);    // #7dcfff - accent
-    pub const GREEN: Color = Color::Rgb(158, 206, 106);   // #9ece6a - success
-    pub const RED: Color = Color::Rgb(247, 118, 142);     // #f7768e - error
-    pub const ORANGE: Color = Color::Rgb(255, 158, 100);  // #ff9e64 - warning
-    pub const YELLOW: Color = Color::Rgb(224, 175, 104);  // #e0af68 - info
-    pub const GRAY: Color = Color::Rgb(86, 95, 137);      // #565f89 - muted
+    pub const BLUE: Color = Color::Rgb(122, 162, 247); // #7aa2f7 - primary
+    pub const PURPLE: Color = Color::Rgb(187, 154, 247); // #bb9af7 - secondary
+    pub const CYAN: Color = Color::Rgb(125, 207, 255); // #7dcfff - accent
+    pub const GREEN: Color = Color::Rgb(158, 206, 106); // #9ece6a - success
+    pub const RED: Color = Color::Rgb(247, 118, 142); // #f7768e - error
+    pub const ORANGE: Color = Color::Rgb(255, 158, 100); // #ff9e64 - warning
+    pub const YELLOW: Color = Color::Rgb(224, 175, 104); // #e0af68 - info
+    pub const GRAY: Color = Color::Rgb(86, 95, 137); // #565f89 - muted
     pub const GRAY_LIGHT: Color = Color::Rgb(114, 124, 172); // #727ca8 - borders
-    
+
     // Status styles
     pub fn focused_border() -> Style {
         Style::default().fg(Self::CYAN).add_modifier(Modifier::BOLD)
     }
-    
+
     pub fn inactive_border() -> Style {
         Style::default().fg(Self::GRAY)
     }
-    
+
     pub fn selected_item() -> Style {
         Style::default()
             .bg(Self::BG_HIGHLIGHT)
             .fg(Self::CYAN)
             .add_modifier(Modifier::BOLD)
     }
-    
+
     pub fn success_text() -> Style {
         Style::default().fg(Self::GREEN)
     }
-    
+
     pub fn error_text() -> Style {
         Style::default().fg(Self::RED)
     }
-    
+
     pub fn warning_text() -> Style {
         Style::default().fg(Self::ORANGE)
     }
-    
+
     pub fn info_text() -> Style {
         Style::default().fg(Self::YELLOW)
     }
-    
+
     pub fn muted_text() -> Style {
         Style::default().fg(Self::GRAY)
     }
@@ -84,16 +82,16 @@ impl Icons {
     pub const FEED_LOADING: &'static str = "⏳";
     pub const FEED_ERROR: &'static str = "❌";
     pub const FEED_EMPTY: &'static str = "📭";
-    
+
     pub const ARTICLE_UNREAD: &'static str = "●";
     pub const ARTICLE_READ: &'static str = "○";
     pub const ARTICLE_SELECTED: &'static str = "▶";
-    
+
     pub const STATUS_OK: &'static str = "✓";
     pub const STATUS_ERROR: &'static str = "✗";
     pub const STATUS_REFRESH: &'static str = "↻";
     pub const STATUS_LOADING: &'static str = "⟳";
-    
+
     pub const PANE_FEEDS: &'static str = "📰";
     pub const PANE_ARTICLES: &'static str = "📄";
     pub const PANE_PREVIEW: &'static str = "👀";
@@ -101,14 +99,14 @@ impl Icons {
 
 pub fn render_enhanced_ui(f: &mut Frame, app: &mut App) {
     let size = f.area();
-    
+
     // Enhanced layout with better proportions and spacing
     let main_chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),  // Enhanced header
-            Constraint::Min(5),     // Main content
-            Constraint::Length(3),  // Enhanced status bar
+            Constraint::Length(3), // Enhanced header
+            Constraint::Min(5),    // Main content
+            Constraint::Length(3), // Enhanced status bar
         ])
         .split(size);
 
@@ -123,7 +121,7 @@ pub fn render_enhanced_ui(f: &mut Frame, app: &mut App) {
             render_enhanced_article_view(f, main_chunks[1], app);
         }
     }
-    
+
     // Enhanced status bar with contextual information
     render_enhanced_status_bar(f, main_chunks[2], app);
 
@@ -139,8 +137,8 @@ fn render_enhanced_header(f: &mut Frame, area: Rect, app: &App) {
     let header_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Min(0),        // Title and info
-            Constraint::Length(30),    // Quick help
+            Constraint::Min(0),     // Title and info
+            Constraint::Length(30), // Quick help
         ])
         .split(area);
 
@@ -150,7 +148,7 @@ fn render_enhanced_header(f: &mut Frame, area: Rect, app: &App) {
     } else {
         String::new()
     };
-    
+
     let title_text = format!(
         " {} Yomi - {} feeds | {} unread{}",
         Icons::PANE_FEEDS,
@@ -158,31 +156,29 @@ fn render_enhanced_header(f: &mut Frame, area: Rect, app: &App) {
         app.unread_count,
         refresh_status
     );
-    
+
     let title_style = if app.is_refreshing {
         EnhancedTokyoNight::info_text()
     } else {
         Style::default().fg(EnhancedTokyoNight::FG)
     };
-    
-    let title = Paragraph::new(title_text)
-        .style(title_style)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_type(BorderType::Rounded)
-                .border_style(Style::default().fg(EnhancedTokyoNight::BLUE))
-        );
-    
+
+    let title = Paragraph::new(title_text).style(title_style).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded)
+            .border_style(Style::default().fg(EnhancedTokyoNight::BLUE)),
+    );
+
     f.render_widget(title, header_chunks[0]);
-    
+
     // Quick help hints
     let current_mode_help = match app.current_screen {
         CurrentScreen::FeedList => "Tab→Articles | r→Refresh | ?→Help",
         CurrentScreen::ArticleList => "↵→Read | o→Browser | Tab→Feeds",
         CurrentScreen::ArticleView => "↕→Scroll | Esc→Back | o→Browser",
     };
-    
+
     let help_hint = Paragraph::new(current_mode_help)
         .style(EnhancedTokyoNight::muted_text())
         .alignment(Alignment::Right)
@@ -190,9 +186,9 @@ fn render_enhanced_header(f: &mut Frame, area: Rect, app: &App) {
             Block::default()
                 .borders(Borders::ALL)
                 .border_type(BorderType::Rounded)
-                .border_style(Style::default().fg(EnhancedTokyoNight::GRAY))
+                .border_style(Style::default().fg(EnhancedTokyoNight::GRAY)),
         );
-    
+
     f.render_widget(help_hint, header_chunks[1]);
 }
 
@@ -201,9 +197,9 @@ fn render_enhanced_main_view(f: &mut Frame, area: Rect, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(28),  // Feeds - slightly larger
-            Constraint::Percentage(38),  // Articles - main focus
-            Constraint::Percentage(34),  // Preview - good size for reading
+            Constraint::Percentage(28), // Feeds - slightly larger
+            Constraint::Percentage(38), // Articles - main focus
+            Constraint::Percentage(34), // Preview - good size for reading
         ])
         .split(area);
 
@@ -213,7 +209,8 @@ fn render_enhanced_main_view(f: &mut Frame, area: Rect, app: &mut App) {
 }
 
 fn render_enhanced_feeds(f: &mut Frame, area: Rect, app: &mut App) {
-    let feed_items: Vec<ListItem> = app.feeds
+    let feed_items: Vec<ListItem> = app
+        .feeds
         .iter()
         .map(|feed| {
             let (icon, status_style) = match &feed.state {
@@ -232,7 +229,7 @@ fn render_enhanced_feeds(f: &mut Frame, area: Rect, app: &mut App) {
                 }
                 FeedState::Error(_) => (Icons::FEED_ERROR, EnhancedTokyoNight::error_text()),
             };
-            
+
             // Show unread count for loaded feeds
             let unread_info = match &feed.state {
                 FeedState::Loaded(articles) => {
@@ -245,30 +242,30 @@ fn render_enhanced_feeds(f: &mut Frame, area: Rect, app: &mut App) {
                 }
                 _ => String::new(),
             };
-            
+
             let content = Line::from(vec![
                 Span::styled(format!("{} ", icon), status_style),
                 Span::styled(&feed.name, Style::default().fg(EnhancedTokyoNight::FG)),
                 Span::styled(unread_info, EnhancedTokyoNight::info_text()),
             ]);
-            
+
             ListItem::new(content)
         })
         .collect();
-    
+
     let is_focused = app.current_screen == CurrentScreen::FeedList;
     let border_style = if is_focused {
         EnhancedTokyoNight::focused_border()
     } else {
         EnhancedTokyoNight::inactive_border()
     };
-    
+
     let title = if app.is_refreshing {
         format!("{} Feeds {}", Icons::PANE_FEEDS, Icons::STATUS_REFRESH)
     } else {
         format!("{} Feeds", Icons::PANE_FEEDS)
     };
-    
+
     let feeds_list = List::new(feed_items)
         .block(
             Block::default()
@@ -276,13 +273,13 @@ fn render_enhanced_feeds(f: &mut Frame, area: Rect, app: &mut App) {
                 .border_type(BorderType::Rounded)
                 .border_style(border_style)
                 .title(title)
-                .title_style(
-                    if app.is_refreshing {
-                        EnhancedTokyoNight::info_text().add_modifier(Modifier::BOLD)
-                    } else {
-                        Style::default().fg(EnhancedTokyoNight::BLUE).add_modifier(Modifier::BOLD)
-                    }
-                )
+                .title_style(if app.is_refreshing {
+                    EnhancedTokyoNight::info_text().add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                        .fg(EnhancedTokyoNight::BLUE)
+                        .add_modifier(Modifier::BOLD)
+                }),
         )
         .style(Style::default().fg(EnhancedTokyoNight::FG))
         .highlight_style(EnhancedTokyoNight::selected_item())
@@ -298,14 +295,24 @@ fn render_enhanced_articles(f: &mut Frame, area: Rect, app: &mut App) {
     // Get current feed info first
     let current_feed = &app.feeds[app.current_feed_index];
     let title = match &current_feed.state {
-        FeedState::Loading => format!("{} {} • Loading...", Icons::PANE_ARTICLES, current_feed.name),
+        FeedState::Loading => format!(
+            "{} {} • Loading...",
+            Icons::PANE_ARTICLES,
+            current_feed.name
+        ),
         FeedState::Loaded(articles) => {
             let unread = articles.iter().filter(|a| !a.read).count();
-            format!("{} {} • {} articles ({} new)", Icons::PANE_ARTICLES, current_feed.name, articles.len(), unread)
-        },
+            format!(
+                "{} {} • {} articles ({} new)",
+                Icons::PANE_ARTICLES,
+                current_feed.name,
+                articles.len(),
+                unread
+            )
+        }
         FeedState::Error(_e) => format!("{} {} • Error", Icons::PANE_ARTICLES, current_feed.name),
     };
-    
+
     // Get articles and create list items
     let articles = app.current_articles();
     let article_items: Vec<ListItem> = articles
@@ -318,37 +325,34 @@ fn render_enhanced_articles(f: &mut Frame, area: Rect, app: &mut App) {
             } else {
                 Icons::ARTICLE_UNREAD
             };
-            
+
             let read_style = if article.read {
                 EnhancedTokyoNight::muted_text()
             } else {
                 EnhancedTokyoNight::success_text()
             };
-            
-            let date_str = article.pub_date
+
+            let date_str = article
+                .pub_date
                 .map(|date| format!(" • {}", date.format("%m/%d %H:%M")))
                 .unwrap_or_default();
-            
+
             let title_style = if article.read {
                 Style::default().fg(EnhancedTokyoNight::FG_DARK)
             } else {
                 Style::default().fg(EnhancedTokyoNight::FG)
             };
-            
+
             // Add visual separator every 5 articles for better scanning
-            let line_prefix = if i > 0 && i % 5 == 0 {
-                "─ "
-            } else {
-                ""
-            };
-            
+            let line_prefix = if i > 0 && i % 5 == 0 { "─ " } else { "" };
+
             let content = Line::from(vec![
                 Span::raw(line_prefix),
                 Span::styled(format!("{} ", read_icon), read_style),
                 Span::styled(&article.title, title_style),
                 Span::styled(date_str, EnhancedTokyoNight::muted_text()),
             ]);
-            
+
             ListItem::new(content)
         })
         .collect();
@@ -367,7 +371,11 @@ fn render_enhanced_articles(f: &mut Frame, area: Rect, app: &mut App) {
                 .border_type(BorderType::Rounded)
                 .border_style(border_style)
                 .title(title)
-                .title_style(Style::default().fg(EnhancedTokyoNight::PURPLE).add_modifier(Modifier::BOLD))
+                .title_style(
+                    Style::default()
+                        .fg(EnhancedTokyoNight::PURPLE)
+                        .add_modifier(Modifier::BOLD),
+                ),
         )
         .style(Style::default().fg(EnhancedTokyoNight::FG))
         .highlight_style(EnhancedTokyoNight::selected_item())
@@ -385,7 +393,7 @@ fn render_enhanced_preview(f: &mut Frame, area: Rect, app: &App) {
         let title_line = format!("📰 {}", article.title);
         let link_line = format!("🔗 {}", article.link);
         let separator = "─".repeat(area.width.saturating_sub(4) as usize);
-        
+
         let preview_text = format!(
             "{}\n{}\n{}\n\n{}",
             title_line,
@@ -401,7 +409,11 @@ fn render_enhanced_preview(f: &mut Frame, area: Rect, app: &App) {
                     .border_type(BorderType::Rounded)
                     .border_style(Style::default().fg(EnhancedTokyoNight::GREEN))
                     .title(format!("{} Preview", Icons::PANE_PREVIEW))
-                    .title_style(Style::default().fg(EnhancedTokyoNight::GREEN).add_modifier(Modifier::BOLD))
+                    .title_style(
+                        Style::default()
+                            .fg(EnhancedTokyoNight::GREEN)
+                            .add_modifier(Modifier::BOLD),
+                    ),
             )
             .style(Style::default().fg(EnhancedTokyoNight::FG))
             .wrap(Wrap { trim: true });
@@ -415,7 +427,7 @@ fn render_enhanced_preview(f: &mut Frame, area: Rect, app: &App) {
                     .border_type(BorderType::Rounded)
                     .border_style(EnhancedTokyoNight::inactive_border())
                     .title(format!("{} Preview", Icons::PANE_PREVIEW))
-                    .title_style(EnhancedTokyoNight::muted_text())
+                    .title_style(EnhancedTokyoNight::muted_text()),
             )
             .style(EnhancedTokyoNight::muted_text())
             .alignment(Alignment::Center);
@@ -431,10 +443,13 @@ fn render_enhanced_article_view(f: &mut Frame, area: Rect, app: &App) {
             "📰 {}\n🔗 {}\n📅 {}\n{}",
             article.title,
             article.link,
-            article.pub_date.map(|d| d.format("%B %d, %Y at %H:%M").to_string()).unwrap_or("Unknown date".to_string()),
+            article
+                .pub_date
+                .map(|d| d.format("%B %d, %Y at %H:%M").to_string())
+                .unwrap_or("Unknown date".to_string()),
             "─".repeat(area.width.saturating_sub(4) as usize)
         );
-        
+
         let content = format!("{}\n\n{}", header, strip_html_tags(&article.description));
 
         let paragraph = Paragraph::new(content)
@@ -444,7 +459,11 @@ fn render_enhanced_article_view(f: &mut Frame, area: Rect, app: &App) {
                     .border_type(BorderType::Rounded)
                     .border_style(EnhancedTokyoNight::focused_border())
                     .title(" 📖 Article Reader ")
-                    .title_style(Style::default().fg(EnhancedTokyoNight::BLUE).add_modifier(Modifier::BOLD))
+                    .title_style(
+                        Style::default()
+                            .fg(EnhancedTokyoNight::BLUE)
+                            .add_modifier(Modifier::BOLD),
+                    ),
             )
             .style(Style::default().fg(EnhancedTokyoNight::FG))
             .wrap(Wrap { trim: true })
@@ -458,8 +477,8 @@ fn render_enhanced_status_bar(f: &mut Frame, area: Rect, app: &App) {
     let status_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Min(0),        // Main status
-            Constraint::Length(20),    // Last refresh time
+            Constraint::Min(0),     // Main status
+            Constraint::Length(20), // Last refresh time
         ])
         .split(area);
 
@@ -475,22 +494,21 @@ fn render_enhanced_status_bar(f: &mut Frame, area: Rect, app: &App) {
             app.unread_count
         )
     };
-    
-    let status_style = if app.status_message.contains("Error") || app.status_message.contains("failed") {
-        EnhancedTokyoNight::error_text()
-    } else if app.is_refreshing {
-        EnhancedTokyoNight::info_text()
-    } else {
-        Style::default().fg(EnhancedTokyoNight::FG)
-    };
 
-    let main_status_bar = Paragraph::new(main_status)
-        .style(status_style)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(EnhancedTokyoNight::GRAY))
-        );
+    let status_style =
+        if app.status_message.contains("Error") || app.status_message.contains("failed") {
+            EnhancedTokyoNight::error_text()
+        } else if app.is_refreshing {
+            EnhancedTokyoNight::info_text()
+        } else {
+            Style::default().fg(EnhancedTokyoNight::FG)
+        };
+
+    let main_status_bar = Paragraph::new(main_status).style(status_style).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(EnhancedTokyoNight::GRAY)),
+    );
 
     f.render_widget(main_status_bar, status_chunks[0]);
 
@@ -510,7 +528,7 @@ fn render_enhanced_status_bar(f: &mut Frame, area: Rect, app: &App) {
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(EnhancedTokyoNight::GRAY))
+                .border_style(Style::default().fg(EnhancedTokyoNight::GRAY)),
         );
 
     f.render_widget(refresh_bar, status_chunks[1]);
@@ -518,15 +536,19 @@ fn render_enhanced_status_bar(f: &mut Frame, area: Rect, app: &App) {
 
 fn render_enhanced_help(f: &mut Frame, area: Rect) {
     let help_content = vec![
-        Line::from(vec![
-            Span::styled("🎌 Yomi RSS Reader - Help & CLI", 
-                Style::default().fg(EnhancedTokyoNight::CYAN).add_modifier(Modifier::BOLD))
-        ]),
+        Line::from(vec![Span::styled(
+            "🎌 Yomi RSS Reader - Help & CLI",
+            Style::default()
+                .fg(EnhancedTokyoNight::CYAN)
+                .add_modifier(Modifier::BOLD),
+        )]),
         Line::from(""),
-        Line::from(vec![
-            Span::styled("💻 CLI COMMANDS", 
-                Style::default().fg(EnhancedTokyoNight::CYAN).add_modifier(Modifier::BOLD))
-        ]),
+        Line::from(vec![Span::styled(
+            "💻 CLI COMMANDS",
+            Style::default()
+                .fg(EnhancedTokyoNight::CYAN)
+                .add_modifier(Modifier::BOLD),
+        )]),
         Line::from("  yomi add <url> [-n name]    Add RSS/Atom feed"),
         Line::from("  yomi list                   Show all feeds"),
         Line::from("  yomi remove <name|index>    Remove feed"),
@@ -534,10 +556,12 @@ fn render_enhanced_help(f: &mut Frame, area: Rect) {
         Line::from("  yomi read                   Start TUI mode"),
         Line::from("  yomi --help                 CLI help"),
         Line::from(""),
-        Line::from(vec![
-            Span::styled("⌨️  TUI NAVIGATION", 
-                Style::default().fg(EnhancedTokyoNight::BLUE).add_modifier(Modifier::BOLD))
-        ]),
+        Line::from(vec![Span::styled(
+            "⌨️  TUI NAVIGATION",
+            Style::default()
+                .fg(EnhancedTokyoNight::BLUE)
+                .add_modifier(Modifier::BOLD),
+        )]),
         Line::from("  ↑/↓,k/j   Navigate lists & scroll content"),
         Line::from("  ←/→,h/l   Move between panes"),
         Line::from("  Tab       Switch panes (feeds/articles/preview)"),
@@ -546,27 +570,33 @@ fn render_enhanced_help(f: &mut Frame, area: Rect) {
         Line::from("  g/G       Go to top/bottom"),
         Line::from("  q         Quit application"),
         Line::from(""),
-        Line::from(vec![
-            Span::styled("📰 ARTICLE ACTIONS", 
-                Style::default().fg(EnhancedTokyoNight::GREEN).add_modifier(Modifier::BOLD))
-        ]),
+        Line::from(vec![Span::styled(
+            "📰 ARTICLE ACTIONS",
+            Style::default()
+                .fg(EnhancedTokyoNight::GREEN)
+                .add_modifier(Modifier::BOLD),
+        )]),
         Line::from("  r, F5     Refresh all feeds"),
         Line::from("  o         Open in browser (mark as read)"),
         Line::from("  m         Toggle read/unread status"),
         Line::from("  A         Mark all feed articles as read"),
         Line::from(""),
-        Line::from(vec![
-            Span::styled("🎨 INTERFACE GUIDE", 
-                Style::default().fg(EnhancedTokyoNight::PURPLE).add_modifier(Modifier::BOLD))
-        ]),
+        Line::from(vec![Span::styled(
+            "🎨 INTERFACE GUIDE",
+            Style::default()
+                .fg(EnhancedTokyoNight::PURPLE)
+                .add_modifier(Modifier::BOLD),
+        )]),
         Line::from("  [+] Feed loaded  [~] Loading  [!] Error"),
         Line::from("  [ ] Unread       [R] Read     [*] Refreshing"),
         Line::from("  Blue border = Active pane"),
         Line::from(""),
-        Line::from(vec![
-            Span::styled("⚙️  CONFIGURATION", 
-                Style::default().fg(EnhancedTokyoNight::YELLOW).add_modifier(Modifier::BOLD))
-        ]),
+        Line::from(vec![Span::styled(
+            "⚙️  CONFIGURATION",
+            Style::default()
+                .fg(EnhancedTokyoNight::YELLOW)
+                .add_modifier(Modifier::BOLD),
+        )]),
         Line::from("  Config: ~/.config/yomi/config.toml"),
         Line::from("  State:  ~/.config/yomi/state.toml"),
         Line::from("  Auto-refresh: Every 10 minutes"),
@@ -579,7 +609,11 @@ fn render_enhanced_help(f: &mut Frame, area: Rect) {
                 .border_type(BorderType::Rounded)
                 .border_style(EnhancedTokyoNight::focused_border())
                 .title(" ❓ Help & Keyboard Shortcuts ")
-                .title_style(Style::default().fg(EnhancedTokyoNight::BLUE).add_modifier(Modifier::BOLD))
+                .title_style(
+                    Style::default()
+                        .fg(EnhancedTokyoNight::BLUE)
+                        .add_modifier(Modifier::BOLD),
+                ),
         )
         .style(Style::default().fg(EnhancedTokyoNight::FG))
         .alignment(Alignment::Left)
@@ -598,7 +632,7 @@ fn strip_html_tags(html: &str) -> String {
         .replace("&gt;", ">")
         .replace("&quot;", "\"")
         .replace("&#39;", "'");
-    
+
     let re = regex::Regex::new(r"<[^>]*>").unwrap();
     re.replace_all(&cleaned, "")
         .trim()

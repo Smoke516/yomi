@@ -68,7 +68,10 @@ mod tests {
     fn regression_em_dash_at_the_cut() {
         let title = "Kubernetes 1.35 ships CNI \u{2014} and what it breaks";
         assert!(!title.is_char_boundary(27));
-        assert_eq!(truncate_string(title, 30), "Kubernetes 1.35 ships CNI \u{2014}...");
+        assert_eq!(
+            truncate_string(title, 30),
+            "Kubernetes 1.35 ships CNI \u{2014}..."
+        );
     }
 
     #[test]

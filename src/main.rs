@@ -1,7 +1,9 @@
 use anyhow::Result;
 use chrono::{DateTime, Local, Utc};
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers},
+    event::{
+        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
+    },
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -18,14 +20,14 @@ use std::{
     io,
     time::{Duration, Instant},
 };
-use tokio::time::{sleep, timeout};
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
+use tokio::time::{sleep, timeout};
 
 // CLI module
 mod cli;
-use cli::{Cli, Commands};
 use clap::Parser;
+use cli::{Cli, Commands};
 
 // Enhanced UI module
 mod enhanced_ui;
@@ -42,9 +44,18 @@ struct Config {
 impl Default for Config {
     fn default() -> Self {
         let mut feeds = HashMap::new();
-        feeds.insert("Hacker News".to_string(), "https://feeds.feedburner.com/TheHackersNews".to_string());
-        feeds.insert("BleepingComputer".to_string(), "https://www.bleepingcomputer.com/feed/".to_string());
-        feeds.insert("TechCrunch".to_string(), "https://techcrunch.com/feed/".to_string());
+        feeds.insert(
+            "Hacker News".to_string(),
+            "https://feeds.feedburner.com/TheHackersNews".to_string(),
+        );
+        feeds.insert(
+            "BleepingComputer".to_string(),
+            "https://www.bleepingcomputer.com/feed/".to_string(),
+        );
+        feeds.insert(
+            "TechCrunch".to_string(),
+            "https://techcrunch.com/feed/".to_string(),
+        );
         Self { feeds }
     }
 }
@@ -60,11 +71,16 @@ struct Article {
 }
 
 impl Article {
-    fn new(title: String, link: String, description: String, pub_date: Option<DateTime<Local>>) -> Self {
+    fn new(
+        title: String,
+        link: String,
+        description: String,
+        pub_date: Option<DateTime<Local>>,
+    ) -> Self {
         let mut hasher = Sha256::new();
         hasher.update(link.as_bytes());
         let id = hex::encode(hasher.finalize())[..16].to_string();
-        
+
         Self {
             id,
             title,
@@ -151,14 +167,18 @@ impl App {
     async fn new() -> Result<Self> {
         let config = load_config()?;
         let app_state = load_app_state().await?;
-        
-        let feeds: Vec<Feed> = config.feeds.iter().map(|(name, url)| Feed {
-            name: name.clone(),
-            url: url.clone(),
-            state: FeedState::Loading,
-            last_updated: None,
-            retry_count: 0,
-        }).collect();
+
+        let feeds: Vec<Feed> = config
+            .feeds
+            .iter()
+            .map(|(name, url)| Feed {
+                name: name.clone(),
+                url: url.clone(),
+                state: FeedState::Loading,
+                last_updated: None,
+                retry_count: 0,
+            })
+            .collect();
 
         let mut feed_list_state = ListState::default();
         feed_list_state.select(Some(0));
@@ -166,7 +186,7 @@ impl App {
         // Setup background task communication channels
         let (bg_message_tx, bg_message_rx) = mpsc::unbounded_channel::<BackgroundMessage>();
         let (bg_command_tx, bg_command_rx) = mpsc::unbounded_channel::<BackgroundCommand>();
-        
+
         // Spawn background task handler
         let bg_task_handle = tokio::spawn(background_task_handler(bg_command_rx, bg_message_tx));
 
@@ -197,34 +217,35 @@ impl App {
             self.status_message = "[*] Refresh already in progress...".to_string();
             return;
         }
-        
+
         self.is_refreshing = true;
         self.status_message = "[*] Starting background refresh...".to_string();
-        
+
         // Prepare feed data for background task
-        let feed_data: Vec<(usize, String, String)> = self.feeds
+        let feed_data: Vec<(usize, String, String)> = self
+            .feeds
             .iter()
             .enumerate()
             .map(|(i, feed)| (i, feed.name.clone(), feed.url.clone()))
             .collect();
-        
+
         // Send command to background task
         if let Some(ref tx) = self.bg_command_tx {
             let _ = tx.send(BackgroundCommand::StartRefresh(feed_data));
         }
     }
-    
+
     // Process background messages - called from main event loop
     fn handle_background_messages(&mut self) {
         let mut messages = Vec::new();
-        
+
         // Collect all pending messages first to avoid borrowing conflicts
         if let Some(ref mut rx) = self.bg_message_rx {
             while let Ok(message) = rx.try_recv() {
                 messages.push(message);
             }
         }
-        
+
         // Process collected messages
         for message in messages {
             match message {
@@ -239,8 +260,11 @@ impl App {
             }
         }
     }
-    
-    fn process_refresh_results(&mut self, results: Vec<(usize, String, Result<Vec<Article>, String>)>) {
+
+    fn process_refresh_results(
+        &mut self,
+        results: Vec<(usize, String, Result<Vec<Article>, String>)>,
+    ) {
         for (index, _name, result) in results {
             match result {
                 Ok(mut articles) => {
@@ -251,7 +275,7 @@ impl App {
                     self.feeds[index].state = FeedState::Loaded(articles);
                     self.feeds[index].retry_count = 0;
                     self.feeds[index].last_updated = Some(Instant::now());
-                },
+                }
                 Err(e) => {
                     self.feeds[index].retry_count += 1;
                     let error_msg = if e.to_string().contains("timeout") {
@@ -261,60 +285,69 @@ impl App {
                     } else {
                         "Network error"
                     };
-                    
+
                     self.feeds[index].state = FeedState::Error(format!(
-                        "{} (attempt {})", 
-                        error_msg, 
-                        self.feeds[index].retry_count
+                        "{} (attempt {})",
+                        error_msg, self.feeds[index].retry_count
                     ));
                 }
             }
         }
-        
+
         self.last_refresh = Instant::now();
         self.calculate_unread_count();
-        
-        let successful = self.feeds.iter().filter(|f| matches!(f.state, FeedState::Loaded(_))).count();
+
+        let successful = self
+            .feeds
+            .iter()
+            .filter(|f| matches!(f.state, FeedState::Loaded(_)))
+            .count();
         let failed = self.feeds.len() - successful;
-        
+
         self.status_message = if failed == 0 {
             format!("[OK] All {} feeds updated successfully", successful)
         } else {
             format!("[!] {} updated, {} failed", successful, failed)
         };
     }
-    
+
     // Legacy synchronous refresh for initial load
     async fn refresh_feeds(&mut self) {
         self.status_message = "Refreshing feeds...".to_string();
-        
+
         // Parallel feed fetching with improved error handling
-        let fetch_futures: Vec<_> = self.feeds.iter().enumerate().map(|(i, feed)| {
-            let url = feed.url.clone();
-            let name = feed.name.clone();
-            async move {
-                let result = match fetch_feed_with_retry(&url, 3).await {
-                    Ok(articles) => Ok(articles),
-                    Err(e) => Err(e.to_string()),
-                };
-                (i, name, result)
-            }
-        }).collect();
-        
+        let fetch_futures: Vec<_> = self
+            .feeds
+            .iter()
+            .enumerate()
+            .map(|(i, feed)| {
+                let url = feed.url.clone();
+                let name = feed.name.clone();
+                async move {
+                    let result = match fetch_feed_with_retry(&url, 3).await {
+                        Ok(articles) => Ok(articles),
+                        Err(e) => Err(e.to_string()),
+                    };
+                    (i, name, result)
+                }
+            })
+            .collect();
+
         let results = future::join_all(fetch_futures).await;
         self.process_refresh_results(results);
     }
-    
+
     async fn mark_article_as_read(&mut self, article_id: &str) -> Result<()> {
         self.app_state.read_articles.insert(article_id.to_string());
-        
+
         // Update the article in the current feed
-        if let FeedState::Loaded(ref mut articles) = &mut self.feeds[self.current_feed_index].state {
+        if let FeedState::Loaded(ref mut articles) = &mut self.feeds[self.current_feed_index].state
+        {
             if let Some(article) = articles.iter_mut().find(|a| a.id == article_id) {
                 article.read = true;
             }
         }
-        
+
         self.calculate_unread_count();
         save_app_state(&self.app_state).await?;
         Ok(())
@@ -407,9 +440,10 @@ impl App {
             self.current_article_index = i;
         }
     }
-    
+
     fn calculate_unread_count(&mut self) {
-        self.unread_count = self.feeds
+        self.unread_count = self
+            .feeds
             .iter()
             .filter_map(|feed| {
                 if let FeedState::Loaded(articles) = &feed.state {
@@ -420,7 +454,7 @@ impl App {
             })
             .sum();
     }
-    
+
     // Since we already have parallel fetching in refresh_feeds(),
     // the background refresh is effectively implemented through the existing mechanism.
     // The refresh_feeds() function already uses parallel async operations
@@ -429,7 +463,7 @@ impl App {
 
 async fn fetch_feed_with_retry(url: &str, max_retries: u32) -> Result<Vec<Article>> {
     let mut last_error = None;
-    
+
     for attempt in 0..=max_retries {
         match fetch_feed_single(url).await {
             Ok(articles) => return Ok(articles),
@@ -443,7 +477,7 @@ async fn fetch_feed_with_retry(url: &str, max_retries: u32) -> Result<Vec<Articl
             }
         }
     }
-    
+
     // Return the last error if all retries failed
     Err(last_error.unwrap())
 }
@@ -454,43 +488,61 @@ async fn fetch_feed_single(url: &str) -> Result<Vec<Article>> {
         .timeout(Duration::from_secs(30))
         .user_agent("Yomi/1.0")
         .build()?;
-    
+
     // Add timeout to the entire operation
     let result = timeout(Duration::from_secs(45), async {
         let response = client.get(url).send().await?;
-        
+
         // Check if response is successful
         if !response.status().is_success() {
             return Err(anyhow::anyhow!(
-                "HTTP {} - {}", 
+                "HTTP {} - {}",
                 response.status().as_u16(),
-                response.status().canonical_reason().unwrap_or("Unknown error")
+                response
+                    .status()
+                    .canonical_reason()
+                    .unwrap_or("Unknown error")
             ));
         }
-        
+
         let content = response.bytes().await?;
         let feed = feed_rs::parser::parse(content.as_ref())?;
-        
-        let articles: Vec<Article> = feed.entries.into_iter().take(20).map(|entry| {
-            let pub_date = entry.published
-                .or(entry.updated)
-                .and_then(|dt| DateTime::parse_from_rfc3339(&dt.to_rfc3339()).ok())
-                .map(|dt| dt.with_timezone(&Local));
-            
-            Article::new(
-                entry.title.map(|t| t.content).unwrap_or_else(|| "No title".to_string()),
-                entry.links.first().map(|l| l.href.clone()).unwrap_or_default(),
-                entry.summary
-                    .map(|t| t.content)
-                    .or_else(|| entry.content.and_then(|c| c.body))
-                    .unwrap_or_else(|| "No description available".to_string()),
-                pub_date,
-            )
-        }).collect();
-        
+
+        let articles: Vec<Article> = feed
+            .entries
+            .into_iter()
+            .take(20)
+            .map(|entry| {
+                let pub_date = entry
+                    .published
+                    .or(entry.updated)
+                    .and_then(|dt| DateTime::parse_from_rfc3339(&dt.to_rfc3339()).ok())
+                    .map(|dt| dt.with_timezone(&Local));
+
+                Article::new(
+                    entry
+                        .title
+                        .map(|t| t.content)
+                        .unwrap_or_else(|| "No title".to_string()),
+                    entry
+                        .links
+                        .first()
+                        .map(|l| l.href.clone())
+                        .unwrap_or_default(),
+                    entry
+                        .summary
+                        .map(|t| t.content)
+                        .or_else(|| entry.content.and_then(|c| c.body))
+                        .unwrap_or_else(|| "No description available".to_string()),
+                    pub_date,
+                )
+            })
+            .collect();
+
         Ok(articles)
-    }).await;
-    
+    })
+    .await;
+
     match result {
         Ok(articles) => articles,
         Err(_) => Err(anyhow::anyhow!("Request timed out after 45 seconds")),
@@ -526,7 +578,7 @@ fn save_config(config: &Config) -> Result<()> {
     if let Some(parent) = config_path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    
+
     let toml_string = toml::to_string_pretty(config)?;
     std::fs::write(&config_path, toml_string)?;
     Ok(())
@@ -556,10 +608,10 @@ async fn save_app_state(state: &AppState) -> Result<()> {
     if let Some(parent) = state_path.parent() {
         tokio::fs::create_dir_all(parent).await?;
     }
-    
+
     let mut updated_state = state.clone();
     updated_state.last_update = Some(Utc::now());
-    
+
     let toml_string = toml::to_string_pretty(&updated_state)?;
     tokio::fs::write(&state_path, toml_string).await?;
     Ok(())
@@ -575,10 +627,10 @@ async fn background_task_handler(
             BackgroundCommand::StartRefresh(feed_data) => {
                 // Notify that refresh started
                 let _ = message_tx.send(BackgroundMessage::RefreshStarted);
-                
+
                 // Perform the refresh in background
                 let results = perform_background_refresh(feed_data).await;
-                
+
                 // Send results back to main thread
                 let _ = message_tx.send(BackgroundMessage::RefreshComplete(results));
             }
@@ -587,19 +639,20 @@ async fn background_task_handler(
 }
 
 async fn perform_background_refresh(
-    feed_data: Vec<(usize, String, String)>
+    feed_data: Vec<(usize, String, String)>,
 ) -> Vec<(usize, String, Result<Vec<Article>, String>)> {
     // Parallel feed fetching with improved error handling
-    let fetch_futures: Vec<_> = feed_data.into_iter().map(|(i, name, url)| {
-        async move {
+    let fetch_futures: Vec<_> = feed_data
+        .into_iter()
+        .map(|(i, name, url)| async move {
             let result = match fetch_feed_with_retry(&url, 3).await {
                 Ok(articles) => Ok(articles),
                 Err(e) => Err(e.to_string()),
             };
             (i, name, result)
-        }
-    }).collect();
-    
+        })
+        .collect();
+
     future::join_all(fetch_futures).await
 }
 
@@ -612,18 +665,10 @@ async fn main() -> Result<()> {
             // Start the TUI
             start_tui().await
         }
-        Commands::Add { url, name } => {
-            handle_add_feed(url, name.as_deref()).await
-        }
-        Commands::Remove { target } => {
-            handle_remove_feed(target).await
-        }
-        Commands::List => {
-            handle_list_feeds().await
-        }
-        Commands::Refresh { feed } => {
-            handle_refresh(feed.as_deref()).await
-        }
+        Commands::Add { url, name } => handle_add_feed(url, name.as_deref()).await,
+        Commands::Remove { target } => handle_remove_feed(target).await,
+        Commands::List => handle_list_feeds().await,
+        Commands::Refresh { feed } => handle_refresh(feed.as_deref()).await,
     }
 }
 
@@ -652,15 +697,17 @@ async fn start_tui() -> Result<()> {
 // CLI command handlers
 async fn handle_add_feed(url: &str, name: Option<&str>) -> Result<()> {
     let mut config = load_config()?;
-    
+
     match cli::add_feed(&mut config, url, name.map(String::from)).await {
         Ok(()) => {
             save_config(&config)?;
-            let feed_name = config.feeds.iter()
+            let feed_name = config
+                .feeds
+                .iter()
                 .find(|(_, u)| u == &url)
                 .map(|(name, _)| name.clone())
                 .unwrap_or_else(|| "Unknown".to_string());
-                
+
             println!("✓ Added feed '{}' successfully!", feed_name);
             println!("  URL: {}", url);
         }
@@ -674,14 +721,14 @@ async fn handle_add_feed(url: &str, name: Option<&str>) -> Result<()> {
 
 async fn handle_remove_feed(target: &str) -> Result<()> {
     let mut config = load_config()?;
-    
+
     // Get the name before removing
     let feed_name = if let Ok(index) = target.parse::<usize>() {
         config.feeds.keys().nth(index).cloned()
     } else {
         Some(target.to_string())
     };
-    
+
     match cli::remove_feed(&mut config, target) {
         Ok(()) => {
             save_config(&config)?;
@@ -701,9 +748,9 @@ async fn handle_remove_feed(target: &str) -> Result<()> {
 
 async fn handle_list_feeds() -> Result<()> {
     let config = load_config()?;
-    
+
     match cli::list_feeds(&config) {
-        Ok(()) => {},
+        Ok(()) => {}
         Err(e) => {
             eprintln!("Error listing feeds: {}", e);
             std::process::exit(1);
@@ -714,9 +761,9 @@ async fn handle_list_feeds() -> Result<()> {
 
 async fn handle_refresh(feed_name: Option<&str>) -> Result<()> {
     let config = load_config()?;
-    
+
     match cli::refresh_feeds(&config, feed_name).await {
-        Ok(()) => {},
+        Ok(()) => {}
         Err(e) => {
             eprintln!("Error refreshing feeds: {}", e);
             std::process::exit(1);
@@ -732,7 +779,7 @@ async fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
     loop {
         // Handle background messages first
         app.handle_background_messages();
-        
+
         // Use enhanced UI instead of the basic one
         terminal.draw(|f| render_enhanced_ui(f, &mut app))?;
 
@@ -767,7 +814,7 @@ async fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
     if let Some(handle) = app.bg_task_handle.take() {
         handle.abort();
     }
-    
+
     // Save state before exit
     let _ = save_app_state(&app.app_state).await;
     Ok(())
@@ -803,7 +850,10 @@ async fn handle_key_event(key: KeyCode, _modifiers: KeyModifiers, app: &mut App)
                 let article_link = article.link.clone();
                 let _ = open::that(&article_link);
                 let _ = app.mark_article_as_read(&article_id).await;
-                app.status_message = format!("🌐 Opened '{}' in browser", truncate_string(&article_title, 30));
+                app.status_message = format!(
+                    "🌐 Opened '{}' in browser",
+                    truncate_string(&article_title, 30)
+                );
             }
         }
         // Mark current article as read/unread toggle
@@ -814,7 +864,9 @@ async fn handle_key_event(key: KeyCode, _modifiers: KeyModifiers, app: &mut App)
                     // Unmark as read
                     app.app_state.read_articles.remove(&article_id);
                     // Update the article in the current feed
-                    if let FeedState::Loaded(ref mut articles) = &mut app.feeds[app.current_feed_index].state {
+                    if let FeedState::Loaded(ref mut articles) =
+                        &mut app.feeds[app.current_feed_index].state
+                    {
                         if let Some(article) = articles.iter_mut().find(|a| a.id == article_id) {
                             article.read = false;
                         }
@@ -865,23 +917,22 @@ async fn handle_key_event(key: KeyCode, _modifiers: KeyModifiers, app: &mut App)
                 }
             }
         }
-        KeyCode::Tab => {
-            match app.current_screen {
-                CurrentScreen::FeedList => {
-                    app.current_screen = CurrentScreen::ArticleList;
-                    if app.article_list_state.selected().is_none() && !app.current_articles().is_empty() {
-                        app.article_list_state.select(Some(0));
-                        app.current_article_index = 0;
-                    }
-                }
-                CurrentScreen::ArticleList => {
-                    app.current_screen = CurrentScreen::FeedList;
-                }
-                CurrentScreen::ArticleView => {
-                    app.current_screen = CurrentScreen::ArticleList;
+        KeyCode::Tab => match app.current_screen {
+            CurrentScreen::FeedList => {
+                app.current_screen = CurrentScreen::ArticleList;
+                if app.article_list_state.selected().is_none() && !app.current_articles().is_empty()
+                {
+                    app.article_list_state.select(Some(0));
+                    app.current_article_index = 0;
                 }
             }
-        }
+            CurrentScreen::ArticleList => {
+                app.current_screen = CurrentScreen::FeedList;
+            }
+            CurrentScreen::ArticleView => {
+                app.current_screen = CurrentScreen::ArticleList;
+            }
+        },
         KeyCode::Enter => {
             if app.current_screen == CurrentScreen::ArticleList {
                 // Mark article as read when opening full view
@@ -893,36 +944,30 @@ async fn handle_key_event(key: KeyCode, _modifiers: KeyModifiers, app: &mut App)
                 app.scroll_offset = 0;
             }
         }
-        KeyCode::Esc => {
-            match app.current_screen {
-                CurrentScreen::ArticleView => {
-                    app.current_screen = CurrentScreen::ArticleList;
-                }
-                CurrentScreen::ArticleList => {
-                    app.current_screen = CurrentScreen::FeedList;
-                }
-                _ => {}
+        KeyCode::Esc => match app.current_screen {
+            CurrentScreen::ArticleView => {
+                app.current_screen = CurrentScreen::ArticleList;
             }
-        }
+            CurrentScreen::ArticleList => {
+                app.current_screen = CurrentScreen::FeedList;
+            }
+            _ => {}
+        },
         // Enhanced navigation - Arrow keys and vim-style
-        KeyCode::Up | KeyCode::Char('k') => {
-            match app.current_screen {
-                CurrentScreen::FeedList => app.previous_feed(),
-                CurrentScreen::ArticleList => app.previous_article(),
-                CurrentScreen::ArticleView => {
-                    app.scroll_offset = app.scroll_offset.saturating_sub(1);
-                }
+        KeyCode::Up | KeyCode::Char('k') => match app.current_screen {
+            CurrentScreen::FeedList => app.previous_feed(),
+            CurrentScreen::ArticleList => app.previous_article(),
+            CurrentScreen::ArticleView => {
+                app.scroll_offset = app.scroll_offset.saturating_sub(1);
             }
-        }
-        KeyCode::Down | KeyCode::Char('j') => {
-            match app.current_screen {
-                CurrentScreen::FeedList => app.next_feed(),
-                CurrentScreen::ArticleList => app.next_article(),
-                CurrentScreen::ArticleView => {
-                    app.scroll_offset += 1;
-                }
+        },
+        KeyCode::Down | KeyCode::Char('j') => match app.current_screen {
+            CurrentScreen::FeedList => app.next_feed(),
+            CurrentScreen::ArticleList => app.next_article(),
+            CurrentScreen::ArticleView => {
+                app.scroll_offset += 1;
             }
-        }
+        },
         KeyCode::Left | KeyCode::Char('h') => {
             // Move to left pane or go back
             match app.current_screen {
@@ -940,7 +985,9 @@ async fn handle_key_event(key: KeyCode, _modifiers: KeyModifiers, app: &mut App)
             match app.current_screen {
                 CurrentScreen::FeedList => {
                     app.current_screen = CurrentScreen::ArticleList;
-                    if app.article_list_state.selected().is_none() && !app.current_articles().is_empty() {
+                    if app.article_list_state.selected().is_none()
+                        && !app.current_articles().is_empty()
+                    {
                         app.article_list_state.select(Some(0));
                         app.current_article_index = 0;
                     }
@@ -957,35 +1004,41 @@ async fn handle_key_event(key: KeyCode, _modifiers: KeyModifiers, app: &mut App)
             }
         }
         // Page navigation
-        KeyCode::PageUp => {
-            match app.current_screen {
-                CurrentScreen::ArticleView => {
-                    app.scroll_offset = app.scroll_offset.saturating_sub(10);
-                }
-                CurrentScreen::FeedList => {
-                    for _ in 0..5 { app.previous_feed(); }
-                }
-                CurrentScreen::ArticleList => {
-                    for _ in 0..5 { app.previous_article(); }
+        KeyCode::PageUp => match app.current_screen {
+            CurrentScreen::ArticleView => {
+                app.scroll_offset = app.scroll_offset.saturating_sub(10);
+            }
+            CurrentScreen::FeedList => {
+                for _ in 0..5 {
+                    app.previous_feed();
                 }
             }
-        }
-        KeyCode::PageDown => {
-            match app.current_screen {
-                CurrentScreen::ArticleView => {
-                    app.scroll_offset += 10;
-                }
-                CurrentScreen::FeedList => {
-                    for _ in 0..5 { app.next_feed(); }
-                }
-                CurrentScreen::ArticleList => {
-                    for _ in 0..5 { app.next_article(); }
+            CurrentScreen::ArticleList => {
+                for _ in 0..5 {
+                    app.previous_article();
                 }
             }
-        }
+        },
+        KeyCode::PageDown => match app.current_screen {
+            CurrentScreen::ArticleView => {
+                app.scroll_offset += 10;
+            }
+            CurrentScreen::FeedList => {
+                for _ in 0..5 {
+                    app.next_feed();
+                }
+            }
+            CurrentScreen::ArticleList => {
+                for _ in 0..5 {
+                    app.next_article();
+                }
+            }
+        },
         // Mark all articles in current feed as read
         KeyCode::Char('A') => {
-            if let FeedState::Loaded(ref mut articles) = &mut app.feeds[app.current_feed_index].state {
+            if let FeedState::Loaded(ref mut articles) =
+                &mut app.feeds[app.current_feed_index].state
+            {
                 let mut marked_count = 0;
                 for article in articles.iter_mut() {
                     if !article.read {
@@ -996,7 +1049,8 @@ async fn handle_key_event(key: KeyCode, _modifiers: KeyModifiers, app: &mut App)
                 }
                 app.calculate_unread_count();
                 let _ = save_app_state(&app.app_state).await;
-                app.status_message = format!("✓ Marked {} articles as read in current feed", marked_count);
+                app.status_message =
+                    format!("✓ Marked {} articles as read in current feed", marked_count);
             }
         }
         _ => {}
