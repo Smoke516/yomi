@@ -482,7 +482,7 @@ async fn fetch_feed_single(url: &str) -> Result<Vec<Article>> {
                 entry.links.first().map(|l| l.href.clone()).unwrap_or_default(),
                 entry.summary
                     .map(|t| t.content)
-                    .or_else(|| entry.content.and_then(|c| c.body.map(|b| b)))
+                    .or_else(|| entry.content.and_then(|c| c.body))
                     .unwrap_or_else(|| "No description available".to_string()),
                 pub_date,
             )
@@ -883,17 +883,14 @@ async fn handle_key_event(key: KeyCode, _modifiers: KeyModifiers, app: &mut App)
             }
         }
         KeyCode::Enter => {
-            match app.current_screen {
-                CurrentScreen::ArticleList => {
-                    // Mark article as read when opening full view
-                    if let Some(article) = app.current_article() {
-                        let article_id = article.id.clone();
-                        let _ = app.mark_article_as_read(&article_id).await;
-                    }
-                    app.current_screen = CurrentScreen::ArticleView;
-                    app.scroll_offset = 0;
+            if app.current_screen == CurrentScreen::ArticleList {
+                // Mark article as read when opening full view
+                if let Some(article) = app.current_article() {
+                    let article_id = article.id.clone();
+                    let _ = app.mark_article_as_read(&article_id).await;
                 }
-                _ => {}
+                app.current_screen = CurrentScreen::ArticleView;
+                app.scroll_offset = 0;
             }
         }
         KeyCode::Esc => {

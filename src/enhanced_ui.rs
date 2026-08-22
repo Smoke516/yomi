@@ -215,8 +215,7 @@ fn render_enhanced_main_view(f: &mut Frame, area: Rect, app: &mut App) {
 fn render_enhanced_feeds(f: &mut Frame, area: Rect, app: &mut App) {
     let feed_items: Vec<ListItem> = app.feeds
         .iter()
-        .enumerate()
-        .map(|(_i, feed)| {
+        .map(|feed| {
             let (icon, status_style) = match &feed.state {
                 FeedState::Loading => (Icons::FEED_LOADING, EnhancedTokyoNight::info_text()),
                 FeedState::Loaded(articles) => {

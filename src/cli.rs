@@ -83,8 +83,9 @@ pub async fn validate_feed(url: &str) -> Result<String> {
     let feed = parser::parse(content.as_ref()).context("Failed to parse feed content")?;
     
     // Return the feed title if available, or a generic name
-    Ok(feed.title
-        .and_then(|t| Some(t.content))
+    Ok(feed
+        .title
+        .map(|t| t.content)
         .unwrap_or_else(|| "Untitled Feed".to_string()))
 }
 
@@ -140,7 +141,7 @@ pub fn list_feeds(config: &Config) -> Result<()> {
         return Ok(());
     }
     
-    println!("{:<3} {:<30} {}", "ID", "Feed Name", "URL");
+    println!("{:<3} {:<30} URL", "ID", "Feed Name");
     println!("{:-<3} {:-<30} {:-<40}", "", "", "");
     
     for (i, (name, url)) in config.feeds.iter().enumerate() {
