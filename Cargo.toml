@@ -2,12 +2,13 @@
 name = "yomi"
 version = "1.0.0"
 edition = "2021"
+rust-version = "1.82"
 description = "A beautiful terminal RSS reader with Tokyo Night theme"
 authors = ["seawn"]
 license = "MIT"
 keywords = ["rss", "feed", "terminal", "tui", "reader"]
 categories = ["command-line-utilities"]
-repository = "https://github.com/seawn/yomi"
+repository = "https://github.com/Smoke516/yomi"
 
 [[bin]]
 name = "yomi"

@@ -1,6 +1,74 @@
 # Changelog
 
-All notable changes to Tokyo RSS Reader will be documented in this file.
+All notable changes to Yomi will be documented in this file.
+
+## [Unreleased]
+
+### Fixed
+
+- **`truncate_string` aborted the process on non-ASCII titles.** It cut with a
+  byte index, so any headline whose byte 27 fell inside a multi-byte character
+  panicked when opening an article in the browser (`o`). Because the panic
+  happened in raw mode inside the alternate screen, it also left the shell
+  without echo. Truncation now counts and cuts in characters.
+- **`yomi list` had the same byte-slicing crash** on feed names longer than 28
+  characters containing non-ASCII.
+- **Character-count check was byte-based**, so a 12-character Japanese title
+  (36 bytes) was truncated as if it overflowed a 30-column budget.
+- **`j`/`k` underflowed with no feeds configured.** `next_feed` and
+  `previous_feed` evaluated `feeds.len() - 1` without an emptiness guard, which
+  the CLI lets you reach by removing every feed.
+
+### Removed
+
+- `src/main_enhanced.rs`, 1152 lines that were never part of the build — a
+  superseded prototype of the whole app. Its search, read/unread filter and
+  feed-autodiscovery ideas have no equivalent in `main.rs` and remain in git
+  history at 30c122b.
+- The pre-rewrite render path in `main.rs` (`ui`, `render_feeds`,
+  `render_articles`, `render_article_view`, `render_help`,
+  `render_preview_pane`, `render_status_bar`, `centered_rect`,
+  `strip_html_tags`, the old `TokyoNight` palette) — dead since `enhanced_ui`
+  took over drawing.
+- `CurrentScreen::Help`, an unreachable variant. Help is reached via
+  `PopUp::Help` (bound to `?`). The six `CurrentScreen` matches are now
+  exhaustive.
+- Nine pre-rename "Tokyo RSS" files: `install.sh`, `deploy.sh`, `launch.sh`,
+  `demo.sh`, `test_launch.sh`, `test_features.py`, `LAUNCH.md`, `RENAME.md`
+  and `FEATURES_STATUS.md`. All drove a `tokyo-rss` binary that Cargo has not
+  produced since the rename, and `install.sh` failed partway through.
+
+### Added
+
+- `LICENSE`. The README has badged MIT since the rewrite without one, which
+  left the code all-rights-reserved by default.
+- CI on Linux, macOS and Windows: `cargo fmt --check`, `clippy -D warnings`,
+  the test suite, an MSRV job, and release builds for four targets.
+- The first tests in the repo: 10 cases over `truncate_string`.
+
+### Changed
+
+- Declared `rust-version = "1.82"`. The README claimed 1.70+, which was never
+  true — the dependency tree needs 1.82, verified against real 1.81 and 1.82
+  toolchains.
+- Corrected the Cargo.toml repository URL, which pointed at
+  `github.com/seawn/yomi`.
+- Removed the README's hero demo GIF; the URL was a placeholder returning 404.
+- `cargo fmt` across the crate; `cargo clippy --all-targets` is clean.
+
+## [1.0.0] - 2025-09-24
+
+### Changed
+
+- Renamed the project from Tokyo RSS to Yomi (読み); the binary, crate and
+  config directory all moved from `tokyo-rss` to `yomi`.
+
+### Added
+
+- A CLI alongside the TUI: `add`, `remove`, `list`, `refresh`, `read`, with
+  feed validation on add.
+- Reworked TUI (`enhanced_ui`) with background refresh, persistent read state,
+  browser integration, and retrying feed fetches.
 
 ## [0.1.1] - 2025-08-21
 
