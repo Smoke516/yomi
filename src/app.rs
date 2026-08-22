@@ -395,11 +395,7 @@ impl App {
             },
             KeyCode::Char('o') => self.open_in_browser()?,
             KeyCode::Char('s') => self.save_to_vault()?,
-            KeyCode::Char('w') => {
-                if self.current_placed().is_some() {
-                    self.show_why = true;
-                }
-            }
+            KeyCode::Char('w') if self.current_placed().is_some() => self.show_why = true,
             KeyCode::Char('m') => self.mute_current_feed()?,
             KeyCode::Char('r') => {
                 if !self.refreshing {
@@ -433,11 +429,7 @@ impl App {
             KeyCode::Char('o') => self.open_in_browser()?,
             KeyCode::Char('s') => self.save_to_vault()?,
             KeyCode::Char('n') => self.next_article()?,
-            KeyCode::Char('w') => {
-                if self.current_placed().is_some() {
-                    self.show_why = true;
-                }
-            }
+            KeyCode::Char('w') if self.current_placed().is_some() => self.show_why = true,
             _ => {}
         }
         Ok(())

@@ -348,7 +348,7 @@ pub fn status(store: &Store, config: &Config) -> Result<()> {
         }
     }
     if !saved.is_empty() {
-        saved.sort_by(|a, b| b.1.cmp(&a.1));
+        saved.sort_by_key(|a| std::cmp::Reverse(a.1));
         println!("\nsaved to the vault");
         for (name, n) in saved.iter().take(5) {
             println!("  {:<28} {n}", crate::util::truncate_string(name, 28));

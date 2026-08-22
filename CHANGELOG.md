@@ -30,6 +30,9 @@ it is gone.
   Obsidian-style vault, and never overwrites a file it did not create.
 - **Colour comes from the terminal.** The sixteen ANSI slots instead of
   hardcoded Tokyo Night RGB, with one accent reserved for meaning.
+- **MSRV is now 1.88**, up from 1.82. `rusqlite` pulls in `hashbrown` 0.17,
+  which needs edition 2024. Verified against real toolchains: 1.87 fails to
+  build, 1.88 builds and passes the suite.
 
 ### Added
 

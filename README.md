@@ -9,7 +9,7 @@
 
 [![CI](https://github.com/Smoke516/yomi/actions/workflows/ci.yml/badge.svg)](https://github.com/Smoke516/yomi/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.82%2B-orange.svg)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.88%2B-orange.svg)](https://www.rust-lang.org/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
 
 </div>
@@ -109,7 +109,7 @@ cd yomi
 cargo install --path .
 ```
 
-Requires **Rust 1.82+**.
+Requires **Rust 1.88+**.
 
 ## Getting started
 
