@@ -6,14 +6,12 @@
 
 *"Yomi" (読み) means "reading" in Japanese - perfectly capturing the essence of this elegant feed reader.*
 
+[![CI](https://github.com/Smoke516/yomi/actions/workflows/ci.yml/badge.svg)](https://github.com/Smoke516/yomi/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/language-Rust-orange.svg)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.82%2B-orange.svg)](https://www.rust-lang.org/)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
-[![Status](https://img.shields.io/badge/status-Active-brightgreen.svg)]()
 
-![Yomi Demo](https://github.com/Smoke516/yomi/assets/placeholder/yomi-demo.gif)
-
-*Experience RSS reading like never before with dual CLI/TUI interfaces and stunning Tokyo Night aesthetics.*
+*Dual CLI and TUI interfaces, over a Tokyo Night palette.*
 
 </div>
 
@@ -74,7 +72,7 @@ cargo build --release
 
 ### Prerequisites
 
-- **Rust 1.70+** - [Install Rust](https://rustup.rs/)
+- **Rust 1.82+** - [Install Rust](https://rustup.rs/)
 - **Terminal with TrueColor support** - For optimal Tokyo Night theme display
 - **Modern shell** - bash, zsh, fish, or PowerShell
 
