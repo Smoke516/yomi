@@ -12,6 +12,11 @@ use ratatui::{
 // Enhanced Tokyo Night Theme with additional variants
 pub struct EnhancedTokyoNight;
 
+// The palette is kept complete rather than trimmed to what the UI happens to
+// render today. Tokyo Night is a published colour scheme; a partial copy of it
+// is worse than an unused constant, because the next person to add a widget
+// reaches for a hex value instead of a name.
+#[allow(dead_code)]
 impl EnhancedTokyoNight {
     // Core colors (same as original)
     pub const BG: Color = Color::Rgb(26, 27, 38);         // #1a1b26
@@ -71,6 +76,9 @@ impl EnhancedTokyoNight {
 // Enhanced UI icons (using Unicode characters for better visual hierarchy)
 pub struct Icons;
 
+// Same reasoning as the palette: the icon set is a complete vocabulary, and a
+// couple of its members are not on screen in the current layout.
+#[allow(dead_code)]
 impl Icons {
     pub const FEED_LOADED: &'static str = "📡";
     pub const FEED_LOADING: &'static str = "⏳";
@@ -113,9 +121,6 @@ pub fn render_enhanced_ui(f: &mut Frame, app: &mut App) {
         }
         CurrentScreen::ArticleView => {
             render_enhanced_article_view(f, main_chunks[1], app);
-        }
-        CurrentScreen::Help => {
-            render_enhanced_help(f, main_chunks[1]);
         }
     }
     
@@ -176,7 +181,6 @@ fn render_enhanced_header(f: &mut Frame, area: Rect, app: &App) {
         CurrentScreen::FeedList => "Tab→Articles | r→Refresh | ?→Help",
         CurrentScreen::ArticleList => "↵→Read | o→Browser | Tab→Feeds",
         CurrentScreen::ArticleView => "↕→Scroll | Esc→Back | o→Browser",
-        CurrentScreen::Help => "Esc→Close",
     };
     
     let help_hint = Paragraph::new(current_mode_help)
