@@ -31,6 +31,9 @@ use clap::Parser;
 mod enhanced_ui;
 use enhanced_ui::render_enhanced_ui;
 
+mod util;
+use util::truncate_string;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Config {
     feeds: HashMap<String, String>,
@@ -330,6 +333,9 @@ impl App {
     }
 
     fn next_feed(&mut self) {
+        if self.feeds.is_empty() {
+            return;
+        }
         let i = match self.feed_list_state.selected() {
             Some(i) => {
                 if i >= self.feeds.len() - 1 {
@@ -347,6 +353,9 @@ impl App {
     }
 
     fn previous_feed(&mut self) {
+        if self.feeds.is_empty() {
+            return;
+        }
         let i = match self.feed_list_state.selected() {
             Some(i) => {
                 if i == 0 {
@@ -997,13 +1006,4 @@ async fn handle_key_event(key: KeyCode, _modifiers: KeyModifiers, app: &mut App)
     }
 
     Ok(true)
-}
-
-// Utility function to truncate strings for UI display
-fn truncate_string(s: &str, max_len: usize) -> String {
-    if s.len() <= max_len {
-        s.to_string()
-    } else {
-        format!("{}...", &s[..max_len.saturating_sub(3)])
-    }
 }

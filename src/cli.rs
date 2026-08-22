@@ -144,11 +144,7 @@ pub fn list_feeds(config: &Config) -> Result<()> {
     println!("{:-<3} {:-<30} {:-<40}", "", "", "");
     
     for (i, (name, url)) in config.feeds.iter().enumerate() {
-        let truncated_name = if name.len() > 28 {
-            format!("{}...", &name[..25])
-        } else {
-            name.clone()
-        };
+        let truncated_name = crate::util::truncate_string(name, 28);
         
         println!("{:<3} {:<30} {}", i, truncated_name, url);
     }
