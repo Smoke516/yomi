@@ -60,6 +60,12 @@ pub enum Command {
     /// Fetch every feed
     Refresh,
 
+    /// Keep a feed subscribed but out of the edition
+    Mute { target: String },
+
+    /// Let a muted feed back into the edition
+    Unmute { target: String },
+
     /// Where Yomi keeps things, and how much it is holding
     Status,
 
@@ -136,6 +142,37 @@ pub fn list(store: &Store) -> Result<()> {
             feed.url,
             flag
         );
+    }
+    Ok(())
+}
+
+/// Mute or unmute a feed, by name or by its index in `yomi list`.
+///
+/// Muting is the middle ground between living with a noisy feed and removing
+/// it: the subscription and its history survive, but nothing from it reaches
+/// the edition — not even the held-back list.
+pub fn set_mute(store: &Store, target: &str, muted: bool) -> Result<()> {
+    let Some(feed) = store.find_feed(target)? else {
+        println!("no feed called {target:?} — try `yomi list`");
+        return Ok(());
+    };
+    if feed.muted == muted {
+        println!(
+            "{} is already {}",
+            feed.name,
+            if muted { "muted" } else { "unmuted" }
+        );
+        return Ok(());
+    }
+    store.set_muted(feed.id, muted)?;
+    if muted {
+        println!(
+            "muted {} — still subscribed, still collecting, but out of the edition",
+            feed.name
+        );
+        println!("  `yomi unmute {:?}` brings it back", feed.name);
+    } else {
+        println!("unmuted {} — back in the edition", feed.name);
     }
     Ok(())
 }
@@ -521,6 +558,35 @@ mod tests {
         )
         .unwrap();
         assert_eq!(store.rules().unwrap()[0].weight, 1.0);
+    }
+
+    #[test]
+    fn muting_and_unmuting_flip_the_flag() {
+        let store = Store::in_memory().unwrap();
+        store
+            .add_feed("Krebs on Security", "https://k.invalid/f")
+            .unwrap();
+
+        set_mute(&store, "krebs on security", true).unwrap();
+        assert!(store.feeds().unwrap()[0].muted);
+
+        set_mute(&store, "0", false).unwrap();
+        assert!(!store.feeds().unwrap()[0].muted, "index form must work too");
+    }
+
+    #[test]
+    fn muting_twice_is_not_an_error() {
+        let store = Store::in_memory().unwrap();
+        store.add_feed("a", "https://a.invalid/f").unwrap();
+        set_mute(&store, "a", true).unwrap();
+        set_mute(&store, "a", true).unwrap();
+        assert!(store.feeds().unwrap()[0].muted);
+    }
+
+    #[test]
+    fn muting_an_unknown_feed_is_reported_not_fatal() {
+        let store = Store::in_memory().unwrap();
+        assert!(set_mute(&store, "nope", true).is_ok());
     }
 
     #[test]

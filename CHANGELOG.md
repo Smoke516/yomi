@@ -36,6 +36,10 @@ it is gone.
 
 ### Added
 
+- **`yomi mute` and `yomi unmute`.** `m` in the interface could mute a feed but
+  nothing could undo it — a muted feed has no row to press a key on, so the way
+  back had to be a command. Both take a name or an index, and muting something
+  already muted says so instead of failing.
 - **A local SQLite store** at `~/.local/share/yomi/yomi.db` (`$YOMI_STORE`
   overrides). Articles are kept rather than refetched, which is what makes the
   ranking, offline reading and instant startup possible.
