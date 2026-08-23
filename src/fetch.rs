@@ -90,7 +90,7 @@ pub async fn fetch_feed(client: &Client, url: &str) -> Result<Vec<IncomingArticl
             IncomingArticle {
                 id: article_id(Some(&entry.id), &link),
                 title: extract::html_to_markdown(&title),
-                author: entry.authors.first().map(|p| p.name.clone()),
+                author: entry.authors.first().and_then(|p| real_author(&p.name)),
                 link,
                 summary: first_paragraph(&summary, 400),
                 body,
@@ -121,6 +121,31 @@ pub async fn fetch_full_text(client: &Client, link: &str) -> Result<String> {
         return Err(anyhow!("no article text found at {link}"));
     }
     Ok(markdown)
+}
+
+/// Drop bylines that are not names.
+///
+/// Plenty of feeds fill the author field with a placeholder — The Hacker News
+/// publishes the literal string "author" — and rendering that as a byline
+/// makes the edition look broken when it is the feed that is.
+pub fn real_author(name: &str) -> Option<String> {
+    let trimmed = name.trim();
+    const PLACEHOLDERS: &[&str] = &[
+        "author",
+        "admin",
+        "administrator",
+        "editor",
+        "unknown",
+        "none",
+        "n/a",
+        "staff",
+        "no author",
+        "-",
+    ];
+    if trimmed.is_empty() || PLACEHOLDERS.contains(&trimmed.to_ascii_lowercase().as_str()) {
+        return None;
+    }
+    Some(trimmed.to_string())
 }
 
 /// The opening of a summary, cut on a character boundary and at a word.
@@ -238,6 +263,27 @@ mod tests {
     #[test]
     fn an_empty_body_gives_an_empty_summary() {
         assert_eq!(first_paragraph("", 400), "");
+    }
+
+    #[test]
+    fn placeholder_bylines_are_dropped() {
+        // The Hacker News really does publish "author" as the author.
+        for junk in [
+            "author", "Author", " admin ", "unknown", "N/A", "", "   ", "-",
+        ] {
+            assert_eq!(real_author(junk), None, "{junk:?} is not a byline");
+        }
+    }
+
+    #[test]
+    fn real_bylines_are_kept_and_trimmed() {
+        assert_eq!(real_author("Bruce Schneier"), Some("Bruce Schneier".into()));
+        assert_eq!(real_author("  Bill Toulas  "), Some("Bill Toulas".into()));
+        // A sponsor credit is real information, even if it is not a person.
+        assert_eq!(
+            real_author("Sponsored by ThreatLocker"),
+            Some("Sponsored by ThreatLocker".into())
+        );
     }
 
     #[test]
