@@ -79,6 +79,8 @@ async fn main() -> Result<()> {
         Some(Command::Refresh) => cli::refresh(&mut store).await,
         Some(Command::Today { json }) => cli::today(&store, &config, json),
         Some(Command::Why { position }) => cli::why(&store, &config, position),
+        Some(Command::Mute { target }) => cli::set_mute(&store, &target, true),
+        Some(Command::Unmute { target }) => cli::set_mute(&store, &target, false),
         Some(Command::Status) => cli::status(&store, &config),
         Some(Command::Config) => cli::write_config(&config),
         Some(Command::Rule { action }) => cli::rule(&store, &action),

@@ -131,7 +131,7 @@ yomi                                          # open the edition
 | `s` | save to the vault |
 | `w` | why is this here? |
 | `r` | refresh |
-| `m` | mute the selected feed (stays subscribed, leaves the edition) |
+| `m` | mute the selected feed (`yomi unmute` brings it back) |
 | `?` | keys |
 | `q` | quit, or leave the article |
 
@@ -147,6 +147,8 @@ yomi today                 # the edition as text
 yomi today --json          # ... and as JSON, for jq
 yomi why 3                 # the score breakdown for article 3
 yomi list                  # subscribed feeds
+yomi mute "TechCrunch"     # keep it subscribed, keep it out of the edition
+yomi unmute "TechCrunch"   # let it back in
 yomi status                # where things live, and how much is stored
 yomi config                # write a config file to edit
 ```
@@ -164,6 +166,27 @@ yomi rule remove 2
 
 Hidden articles still appear in the held-back count, which names the rule that
 did it — filtering you cannot see is filtering you cannot trust.
+
+### Adding and removing feeds
+
+```bash
+yomi add https://lwn.net/headlines/newrss          # name comes from the feed
+yomi add https://lwn.net/headlines/newrss -n LWN   # or give it your own
+yomi remove "Krebs on Security"                    # by name...
+yomi remove 2                                      # ...or by index in `yomi list`
+```
+
+`add` fetches and parses the feed before saving, so a dead URL fails there
+rather than sitting broken in your list.
+
+`remove` deletes the feed's stored articles with it, including the reading
+history the ranker learned from. If a feed is noisy rather than unwanted,
+**mute** it instead — `m` in the app, or `yomi mute "<name>"`. A muted feed
+stays subscribed and keeps collecting, but nothing from it reaches the edition,
+not even the held-back list. `yomi unmute "<name>"` lets it back in with its
+history intact.
+
+Indices renumber after a removal, so prefer names in scripts.
 
 ## Configuration
 

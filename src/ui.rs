@@ -407,7 +407,7 @@ fn draw_help(f: &mut Frame, area: Rect, app: &App) {
         ("s", "save to the vault"),
         ("w", "why is this here?"),
         ("r", "refresh feeds"),
-        ("m", "mute the selected feed"),
+        ("m", "mute this feed — `yomi unmute` undoes it"),
         ("?", "this"),
         ("q", "quit, or leave the article"),
     ];

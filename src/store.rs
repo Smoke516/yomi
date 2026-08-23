@@ -163,18 +163,27 @@ impl Store {
         Ok(rows.collect::<std::result::Result<Vec<_>, _>>()?)
     }
 
+    /// Look a feed up by name (case-insensitive) or by its index in `feeds()`.
+    ///
+    /// Both forms exist because names are stable and indices are convenient;
+    /// indices renumber after a removal, so scripts should prefer names.
+    pub fn find_feed(&self, target: &str) -> Result<Option<Feed>> {
+        let feeds = self.feeds()?;
+        if let Ok(idx) = target.parse::<usize>() {
+            return Ok(feeds.get(idx).cloned());
+        }
+        let needle = target.to_lowercase();
+        Ok(feeds
+            .iter()
+            .find(|f| f.name.to_lowercase() == needle)
+            .cloned())
+    }
+
     /// Remove a feed by exact name, or by its index in `feeds()`.
     pub fn remove_feed(&self, target: &str) -> Result<Option<String>> {
-        let feeds = self.feeds()?;
-        let found = if let Ok(idx) = target.parse::<usize>() {
-            feeds.get(idx).cloned()
-        } else {
-            feeds
-                .iter()
-                .find(|f| f.name.eq_ignore_ascii_case(target))
-                .cloned()
+        let Some(feed) = self.find_feed(target)? else {
+            return Ok(None);
         };
-        let Some(feed) = found else { return Ok(None) };
         self.conn
             .execute("DELETE FROM feeds WHERE id = ?1", params![feed.id])?;
         Ok(Some(feed.name))
@@ -489,6 +498,44 @@ mod tests {
         s.add_feed("beta", "https://b.invalid/f").unwrap();
         assert_eq!(s.remove_feed("1").unwrap().as_deref(), Some("beta"));
         assert_eq!(s.feeds().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn feeds_are_found_by_name_or_index() {
+        let s = Store::in_memory().unwrap();
+        s.add_feed("alpha", "https://a.invalid/f").unwrap();
+        s.add_feed("beta", "https://b.invalid/f").unwrap();
+        assert_eq!(s.find_feed("beta").unwrap().unwrap().name, "beta");
+        assert_eq!(s.find_feed("1").unwrap().unwrap().name, "beta");
+        assert!(s.find_feed("gamma").unwrap().is_none());
+        assert!(s.find_feed("99").unwrap().is_none());
+    }
+
+    #[test]
+    fn feed_lookup_is_case_insensitive_including_non_ascii() {
+        let s = Store::in_memory().unwrap();
+        s.add_feed("Krebs on Security", "https://k.invalid/f")
+            .unwrap();
+        s.add_feed("Élan Café", "https://e.invalid/f").unwrap();
+        assert!(s.find_feed("krebs on security").unwrap().is_some());
+        assert!(s.find_feed("KREBS ON SECURITY").unwrap().is_some());
+        // eq_ignore_ascii_case would miss this one.
+        assert!(s.find_feed("élan café").unwrap().is_some());
+    }
+
+    #[test]
+    fn muting_is_reversible() {
+        let (s, feed) = store_with_feed();
+        assert!(!s.feeds().unwrap()[0].muted);
+        s.set_muted(feed, true).unwrap();
+        assert!(s.feeds().unwrap()[0].muted);
+        s.set_muted(feed, false).unwrap();
+        assert!(!s.feeds().unwrap()[0].muted);
+        assert_eq!(
+            s.candidates(Duration::hours(48)).unwrap().len(),
+            1,
+            "unmuting must put the feed's articles back in the pool"
+        );
     }
 
     #[test]
